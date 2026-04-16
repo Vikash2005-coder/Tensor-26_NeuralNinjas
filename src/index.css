@@ -1,0 +1,72 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Roboto+Mono:wght@400;700&display=swap');
+
+:root {
+  --bg-deep: #05070a;
+  --bg-panel: rgba(13, 17, 23, 0.85);
+  --border-color: rgba(48, 54, 61, 0.8);
+  
+  --alpha: #00d4ff;   /* Cyan */
+  --beta: #00ff41;    /* Neon Green */
+  --gamma: #bb86fc;   /* Violet */
+  --delta: #f48fb1;   /* Pink/Red */
+  
+  --text-main: #e6edf3;
+  --text-dim: #8b949e;
+  
+  --accent-glow: 0 0 15px currentColor;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg-deep);
+  color: var(--text-main);
+  font-family: 'Inter', sans-serif;
+  overflow: hidden;
+  height: 100vh;
+  width: 100vw;
+}
+
+#root {
+  height: 100%;
+  width: 100%;
+}
+
+.mono {
+  font-family: 'Roboto Mono', monospace;
+}
+
+/* Glassmorphism Panel */
+.panel {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+  padding: 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+.glow-text {
+  text-shadow: 0 0 10px currentColor;
+}
+
+/* Layout Utilities */
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@keyframes pulse {
+  0% { opacity: 0.5; }
+  50% { opacity: 1; }
+  100% { opacity: 0.5; }
+}
+
+.pulse {
+  animation: pulse 2s infinite;
+}
