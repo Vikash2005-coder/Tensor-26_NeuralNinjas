@@ -16,6 +16,7 @@ export default function Home() {
   const [currentWavePoint, setCurrentWavePoint] = useState(null);
   const [aiResponse, setAiResponse] = useState('');
   const [showComms, setShowComms] = useState(false);
+  const [isActive, setIsActive] = useState(false); // Standby interlock
   const [history, setHistory] = useState([]);
 
   const engineRef = useRef(null);
@@ -31,23 +32,24 @@ export default function Home() {
     let animationFrameId;
 
     const loop = (currentTime) => {
-      if (!engineRef.current || !generatorRef.current) {
-        animationFrameId = requestAnimationFrame(loop);
-        return;
-      }
       const deltaTime = (currentTime - lastTime) / 1000;
       lastTime = currentTime;
-      const powers = engineRef.current.update();
-      const point = generatorRef.current.generatePoint(powers, deltaTime);
-      setCurrentWavePoint(point);
+
+      if (isActive && engineRef.current && generatorRef.current) {
+        const powers = engineRef.current.update();
+        const point = generatorRef.current.generatePoint(powers, deltaTime);
+        setCurrentWavePoint(point);
+      }
+      
       animationFrameId = requestAnimationFrame(loop);
     };
 
     animationFrameId = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(animationFrameId);
-  }, []);
+  }, [isActive]);
 
   const handleMessage = async (message) => {
+    setIsActive(true); // Bring systems online on first pulse
     setIsProcessing(true);
     try {
       const result = await analyzeNeuralPrompt(message, history);
