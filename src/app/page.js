@@ -1,173 +1,209 @@
 'use client';
+import React, { useEffect, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import gsap from 'gsap';
 
-import React, { useState, useEffect, useRef } from 'react';
-import Oscilloscope from '@/components/Oscilloscope';
-import ChatBox from '@/components/ChatBox';
-import XAIPanel from '@/components/XAIPanel';
-import RadialGauge from '@/components/RadialGauge';
-import { NeuralEngine } from '@/lib/neuro/NeuralEngine';
-import { WaveGenerator } from '@/lib/neuro/WaveGenerator';
-import { analyzeNeuralPrompt } from './actions';
+const personas = [
+  { id: 'youth', name: 'KIDS & TEENS', image: '/images/youth.jpg', maturity: 0.6 },
+  { id: 'worker', name: 'WORKING CLASS', image: '/images/worker.jpg', maturity: 1.0 },
+  { id: 'senior', name: 'SENIOR CITIZENS', image: '/images/senior.jpg', maturity: 0.8 }
+];
 
-export default function Home() {
-  const [metrics, setMetrics] = useState(null);
-  const [reasoning, setReasoning] = useState('');
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [currentWavePoint, setCurrentWavePoint] = useState(null);
-  const [aiResponse, setAiResponse] = useState('');
-  const [showComms, setShowComms] = useState(false);
-  const [isActive, setIsActive] = useState(false); // Standby interlock
-  const [history, setHistory] = useState([]);
+export default function LandingPage() {
+  const router = useRouter();
+  const containerRef = useRef(null);
+  const tearRef = useRef(null);
+  const [activePersona, setActivePersona] = useState(null);
+  const [showGreeting, setShowGreeting] = useState(false);
 
-  const engineRef = useRef(null);
-  const generatorRef = useRef(null);
+  const greetingData = {
+    youth: "HEY DUDE!",
+    worker: "HEY PROFESSIONALS!",
+    senior: "NAMASTE!"
+  };
 
   useEffect(() => {
-    engineRef.current = new NeuralEngine();
-    generatorRef.current = new WaveGenerator();
+    const ctx = gsap.context(() => {
+      const tl = gsap.timeline({
+        onComplete: () => {
+          gsap.set(tearRef.current, { display: 'none' });
+        }
+      });
+
+      // 1. Initial Tension: Show the Japanese text solid first
+      tl.to('.intro-text', {
+        opacity: 1,
+        duration: 1.5,
+        ease: "power2.inOut",
+        delay: 0.5
+      });
+
+      // 2. The Strike: High-speed flash line streaking through
+      tl.fromTo('.katana-strike',
+        { width: 0, opacity: 0, x: '-100%', y: '100%' },
+        {
+          width: '200%',
+          opacity: 1,
+          x: '50%',
+          y: '-50%',
+          duration: 0.2,
+          ease: "power4.out"
+        }
+      );
+
+      // 3. The Cleave: Move along the diagonal vector (-45 degrees)
+      tl.to('.slice-part', {
+        x: (i) => i === 0 ? 1200 : -1200,
+        y: (i) => i === 0 ? -1200 : 1200,
+        duration: 1,
+        ease: "power4.inOut"
+      }, "-=0.1");
+
+      // Fade out the leftover strike line
+      tl.to('.katana-strike', { opacity: 0, duration: 0.4 }, "-=0.6");
+
+      // 3.5 The Reveal Interval: PRESENTS
+      tl.fromTo('.presents-text',
+        { opacity: 0, scale: 0.5, letterSpacing: "40px" },
+        { opacity: 1, scale: 1, letterSpacing: "15px", duration: 1, ease: "power3.out" }
+        , "-=0.2")
+        .to('.presents-text', { opacity: 0, scale: 2, duration: 0.6, ease: "power3.in" }, "+=0.5");
+
+      // 4. Reveal the MINDSTONE BRAND
+      tl.fromTo('.app-title',
+        { scale: 0.8, opacity: 0 },
+        { scale: 1, opacity: 1, duration: 1.5, ease: "expo.out" }
+        , "-=0.5");
+
+      tl.fromTo('.persona-card',
+        { y: 50, opacity: 0, scale: 0.9 },
+        { y: 0, opacity: 1, scale: 1, duration: 0.8, stagger: 0.15, ease: "back.out(1.7)" }
+        , "-=1");
+
+    }, containerRef);
+
+    return () => ctx.revert();
   }, []);
 
-  useEffect(() => {
-    let lastTime = performance.now();
-    let animationFrameId;
+  const selectPersona = (id) => {
+    setActivePersona(id);
+    setShowGreeting(true);
 
-    const loop = (currentTime) => {
-      const deltaTime = (currentTime - lastTime) / 1000;
-      lastTime = currentTime;
-
-      if (isActive && engineRef.current && generatorRef.current) {
-        const powers = engineRef.current.update();
-        const point = generatorRef.current.generatePoint(powers, deltaTime);
-        setCurrentWavePoint(point);
-      }
-      
-      animationFrameId = requestAnimationFrame(loop);
-    };
-
-    animationFrameId = requestAnimationFrame(loop);
-    return () => cancelAnimationFrame(animationFrameId);
-  }, [isActive]);
-
-  const handleMessage = async (message) => {
-    setIsActive(true); // Bring systems online on first pulse
-    setIsProcessing(true);
-    try {
-      const result = await analyzeNeuralPrompt(message, history);
-      const newTurn = { message, response: result.text, metrics: result };
-      setHistory(prev => [...prev, newTurn].slice(-5));
-      if (engineRef.current) {
-        engineRef.current.trigger({
-          cognitive_load: result.cognitive_load,
-          stress_level: result.stress_level,
-          excitement: result.excitement,
-          gamma_spike: result.gamma_spike,
-          theta_level: result.theta_level // Connection restored here
-        });
-      }
-      setMetrics(result);
-      setReasoning(result.reasoning);
-      setAiResponse(result.text);
-      setShowComms(true);
-    } catch (err) {
-      setReasoning("Fatal connectivity loss: Neural link offline.");
-    } finally {
-      setIsProcessing(false);
-    }
+    // Initializing high-speed neural redirect
+    setTimeout(() => {
+      router.push(`/dashboard?persona=${id}`);
+    }, 2800);
   };
 
   return (
-    <div className="relative h-screen bg-[#03050a] text-foreground p-3 flex flex-col gap-3 overflow-hidden">
-      <div className="scanning-line" />
+    <div ref={containerRef} className="relative min-h-screen bg-[#03050a] text-white overflow-x-hidden font-mono">
+      {/* Sparkly Glitter Background */}
+      <div className="fixed inset-0 pointer-events-none opacity-30 bg-[radial-gradient(circle_at_center,_white_1px,_transparent_1px)] [background-size:40px_40px] animate-pulse" />
 
-      {/* TOP STATUS BAR */}
-      <header className="z-20 flex justify-between items-start">
-        <div className="hud-panel hud-corner border-alpha/30 py-1.5 px-6">
-          <h1 className="mono glow-text text-xl text-alpha flex items-center gap-3">
-            <span className="text-[9px] text-white/30 font-normal uppercase">Projection:</span> 
-            NEURAL_HUD_V2.0
+      {/* Neural Greeting Overlay (Holographic Projection) */}
+      {showGreeting && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center backdrop-blur-3xl bg-black/80 animate-in fade-in duration-700">
+          <div className="max-w-xl w-full p-8 flex flex-col items-center text-center">
+            <div className="relative mb-10">
+              {/* Octagon Avatar for Greeting */}
+              <div className="w-32 h-32 octagon border-2 border-alpha bg-black overflow-hidden scale-110 shadow-[0_0_30px_rgba(0,242,255,0.4)]">
+                <img
+                  src={`/images/${activePersona}.jpg`}
+                  className="w-full h-full object-cover"
+                  alt={activePersona}
+                />
+              </div>
+              <div className="absolute inset-0 octagon border-alpha animate-ping opacity-20" />
+            </div>
+
+            <h2 className="japanese-font text-2xl md:text-3xl text-alpha glow-text mb-6 tracking-widest leading-tight">
+              {greetingData[activePersona]}
+            </h2>
+
+            <p className="mono text-[10px] text-white/40 mb-10 tracking-[5px] uppercase">
+              ESTABLISHING_QUANTUM_UPLINK...
+            </p>
+
+            {/* Progress Bar Container */}
+            <div className="w-64 h-1 bg-white/5 border border-white/10 relative overflow-hidden">
+              <div className="h-full bg-alpha shadow-[0_0_10px_#00f2ff] animate-uplink" />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* INTRO SCREEN (Ronin Slice Protocol) */}
+      <div ref={tearRef} className="fixed inset-0 z-[100] overflow-hidden pointer-events-none bg-transparent">
+        {/* The Katana Strike Flash */}
+        <div className="katana-strike absolute top-1/2 left-1/2" />
+
+        <div className="slice-part absolute inset-0 bg-[#03050a] z-20 flex items-center justify-center"
+          style={{ clipPath: 'polygon(100% 0, 0 0, 100% 100%)' }}>
+          <h1 className="intro-text opacity-0 japanese-font text-7xl md:text-[10rem] text-white leading-none uppercase font-black">
+            NEURAL<br />NINJAS
           </h1>
         </div>
 
-        <div className="hud-panel hud-corner border-beta/30 py-1.5 px-6">
-          <p className="mono text-[10px] text-beta pulse-medical font-bold tracking-widest uppercase">
-            System_Integrity: Optimal // 0.003ms
-          </p>
+        <div className="slice-part absolute inset-0 bg-[#03050a] z-20 flex items-center justify-center"
+          style={{ clipPath: 'polygon(0 0, 0 100%, 100% 100%)' }}>
+          <h1 className="intro-text opacity-0 japanese-font text-7xl md:text-[10rem] text-white leading-none uppercase font-black">
+            NEURAL<br />NINJAS
+          </h1>
         </div>
-      </header>
 
-      {/* TRI-PANEL MAIN AREA */}
-      <main className="z-10 flex-1 flex gap-3 min-h-0">
-        {/* PANEL 1: WAVE MONITOR - Now Full Height After Comms Removal */}
-        <section className="flex-[5] flex flex-col min-w-0 h-full">
-          <div className="flex-1 relative group hud-panel hud-corner border-white/5 bg-[#05080c]/80 overflow-hidden">
-            <div className="absolute top-3 right-4 text-[7px] mono text-white/20 z-20 pointer-events-none tracking-widest uppercase">
-              RLT_SYNC: LIVE_FEED_01
+        {/* THE PRESENTS REVEAL (Inside the Intro Container for visibility) */}
+        <div className="presents-text absolute inset-0 z-10 flex items-center justify-center opacity-0 pointer-events-none">
+          <h1 className="japanese-font text-4xl md:text-6xl text-alpha tracking-[20px] uppercase">
+            PRESENTS
+          </h1>
+        </div>
+      </div>
+
+      {/* MAIN CONTENT REVEALED FROM BEHIND */}
+      <main className="relative z-0 min-h-screen flex flex-col items-center justify-center p-10 pb-40">
+        <h1 className="app-title opacity-0 text-5xl md:text-9xl font-extrabold mb-10 text-center tracking-[15px] festive-text leading-none uppercase">
+          MINDSTONE
+        </h1>
+
+        <div className="flex flex-wrap justify-center gap-12 mt-10">
+          {personas.map((p) => (
+            <div
+              key={p.id}
+              onClick={() => selectPersona(p.id)}
+              className="persona-card group cursor-pointer relative w-64 h-64 flex items-center justify-center"
+            >
+              <div className="absolute inset-0 bg-alpha/5 border-2 border-alpha/30 octagon transition-all duration-500 group-hover:bg-alpha/20 group-hover:scale-110 group-hover:border-alpha group-hover:shadow-[0_0_40px_rgba(0,242,255,0.4)]" />
+              <div className="relative w-48 h-48 octagon overflow-hidden border border-white/10 bg-black/40">
+                <img
+                  src={p.image}
+                  alt={p.name}
+                  className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500 scale-110"
+                />
+              </div>
+              <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 w-max opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-y-4 group-hover:translate-y-0 text-center">
+                <p className="mono text-alpha font-bold tracking-[6px] uppercase text-xs">{p.name}</p>
+              </div>
             </div>
-            <Oscilloscope waveData={currentWavePoint} />
-          </div>
-        </section>
+          ))}
+        </div>
 
-        {/* PANEL 2: DIAGNOSTIC TELEMETRY */}
-        <aside className="flex-[3] flex h-full">
-          <XAIPanel metrics={metrics} reasoning={reasoning} />
-        </aside>
-
-        {/* PANEL 3: STRESS INDEX POD */}
-        <aside className="flex-[2] hud-panel hud-corner border-white/5 bg-[#05080c]/60 h-full relative overflow-hidden">
-           <RadialGauge value={metrics?.stress_level || 0.1} />
-        </aside>
+        <style jsx global>{`
+            @import url('https://fonts.googleapis.com/css2?family=Monoton&display=swap');
+            .octagon {
+              clip-path: polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%);
+            }
+            .festive-text {
+              font-family: 'Monoton', cursive;
+              color: transparent;
+              -webkit-text-stroke: 1px #00f2ff;
+              text-shadow: 0 0 20px rgba(0,242,255,0.3);
+            }
+         `}</style>
       </main>
 
-      {/* INTERACTIVE FOOTER LAYERS */}
-      <footer className="z-20 flex flex-col gap-1.5 relative pb-0">
-        
-        <div className="w-full flex justify-between items-end px-4 gap-6 min-h-[100px]">
-           {/* LEFT COLUMN: TACTICAL COMMS (Occupying original input space) */}
-           <div className="flex-1 max-w-xl">
-              {showComms && (
-                <div className="animate-in fade-in slide-in-from-left-4 duration-300">
-                  <div className="hud-panel hud-corner border-alpha/80 bg-background/95 p-4 relative">
-                      <button 
-                        onClick={() => setShowComms(false)}
-                        className="absolute top-2 right-2 text-alpha hover:text-delta transition-colors mono text-xs p-1"
-                        aria-label="Close Neural Link"
-                      >
-                        [X]
-                      </button>
-                      <div className="mono text-[8px] text-alpha/40 mb-2 tracking-widest uppercase">&gt;&gt;&gt; INCOMING_NEURAL_LINK</div>
-                      <p className="mono text-[11px] leading-relaxed text-white pr-4">
-                        <span className="text-alpha font-bold mr-2 uppercase text-[9px]">Comms:</span>
-                        {aiResponse || ">>> ESTABLISHING STABLE QUANTUM NEURAL UPLINK..."}
-                      </p>
-                  </div>
-                </div>
-              )}
-           </div>
-
-           {/* RIGHT COLUMN: NEURAL PROBE INPUT (Right Justified) */}
-           <div className="w-full max-w-2xl">
-              <ChatBox onSendMessage={handleMessage} isProcessing={isProcessing} />
-           </div>
-        </div>
-
-        {/* BRANDING FOOTER */}
-        <div className="w-full flex justify-between items-end px-4">
-           {/* Logo Area */}
-           <div className="flex items-center gap-4">
-               <div className="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center mono text-lg text-white/40 hover:border-alpha hover:text-white transition-all cursor-help">
-                  N
-               </div>
-               <div className="mono text-[8px] text-white/20 uppercase tracking-[2px]">
-                   Encryption: AES-256-GCM // Neural_Link_Node: IN-SRM-05
-               </div>
-           </div>
-
-           <div className="mono text-[8px] text-white/20 uppercase tracking-[2px] text-right">
-                Scan_Range: 4096.0Hz // REFRESH: 60FPS // APP_ROUTER: ACTIVE
-           </div>
-        </div>
+      <footer className="fixed bottom-10 left-0 w-full flex justify-center opacity-20 pointer-events-none mono text-[8px] tracking-[5px] uppercase">
+        MINDSTONE_DIVISION // ENTRY_PROTOCOL_ACTIVE
       </footer>
-
     </div>
   );
 }

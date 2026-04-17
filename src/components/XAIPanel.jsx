@@ -14,16 +14,16 @@ const MetricBar = ({ label, value, colorClass, colorHex }) => {
       <div className="flex justify-between items-end mb-2">
         <span className="mono text-[10px] text-text-dim/80 tracking-wider uppercase font-bold">{label}</span>
         <span className={`mono text-sm font-bold ${textMap[colorClass]}`}>
-           {(value * 100).toFixed(0)}%
+          {(value * 100).toFixed(0)}%
         </span>
       </div>
       <div className="h-[2px] bg-white/5 relative overflow-hidden">
-        <div 
+        <div
           className={`h-full transition-all duration-1000 ease-out absolute left-0 top-0`}
-          style={{ 
+          style={{
             width: `${value * 100}%`,
             backgroundColor: colorHex,
-          }} 
+          }}
         />
       </div>
     </div>
@@ -41,7 +41,7 @@ const XAIPanel = ({ metrics, reasoning }) => {
         </h3>
         <span className="mono text-[8px] text-white/20">LOG: 04.17.26</span>
       </div>
-      
+
       <div className="flex-1 px-1">
         <MetricBar label="Cognitive Intensity" value={metrics?.cognitive_load || 0} colorClass="beta" colorHex="#00ff88" />
         <MetricBar label="Neural Excitement" value={metrics?.excitement || 0} colorClass="gamma" colorHex="#bc13fe" />
@@ -54,12 +54,12 @@ const XAIPanel = ({ metrics, reasoning }) => {
           LOG_REASONING_TRACE
         </div>
         <div className="hud-scrollbar h-80 overflow-y-auto pr-2">
-            <p className="mono text-[11px] leading-relaxed text-text-dim/90 font-medium whitespace-pre-wrap italic">
+          <p className="mono text-[11px] leading-relaxed text-text-dim/90 font-medium whitespace-pre-wrap italic">
             {reasoning || ">>> STANDBY: SCANNING NEURAL ENVIRONMENT FOR SEMANTIC TRACES. READY FOR PULSE INJECTION..."}
-            </p>
+          </p>
         </div>
         <div className="mt-4 flex justify-end">
-           <span className="mono text-[6px] text-white/10 uppercase">Security_Stamp: AES-NLR-09</span>
+          <span className="mono text-[6px] text-white/10 uppercase">Security_Stamp: AES-NLR-09</span>
         </div>
       </div>
     </div>

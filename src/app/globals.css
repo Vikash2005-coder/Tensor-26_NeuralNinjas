@@ -126,4 +126,40 @@ body::before {
     0%, 100% { opacity: 0.8; filter: brightness(1); }
     50% { opacity: 0.4; filter: brightness(1.5); }
   }
+
+  /* MEDICAL COMPANION ANIMATIONS - Refined for PNG Character */
+  @keyframes heart-beat {
+    0%, 100% { transform: scale(1); filter: drop-shadow(0 0 10px rgba(255, 65, 54, 0.4)); }
+    50% { transform: scale(1.05); filter: drop-shadow(0 0 30px rgba(255, 65, 54, 0.7)); }
+  }
+
+  @keyframes heart-float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+
+  .heart-bot {
+    animation: heart-beat 2s ease-in-out infinite, heart-float 4s ease-in-out infinite;
+  }
+
+  .japanese-font {
+    font-family: var(--font-dela), sans-serif;
+  }
+
+  .katana-strike {
+    position: absolute;
+    width: 200%;
+    height: 4px;
+    background: linear-gradient(90deg, transparent, #ffffff, #ffffff, transparent);
+    box-shadow: 0 0 40px #ffffff, 0 0 100px #ffffff;
+    z-index: 100;
+    pointer-events: none;
+    transform: rotate(-35deg);
+    opacity: 0;
+  }
+
+  /* Optimized Glow for MINDSTONE */
+  .festive-glow {
+    animation: festive-glow 3s linear infinite;
+  }
 }

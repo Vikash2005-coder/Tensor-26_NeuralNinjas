@@ -1,4 +1,4 @@
-import { Inter, Space_Mono } from "next/font/google";
+import { Inter, Space_Mono, Dela_Gothic_One } from "next/font/google";
 import "./globals.css";
 
 const inter = Inter({
@@ -12,14 +12,20 @@ const spaceMono = Space_Mono({
   weight: ['400', '700'],
 });
 
+const delaGothic = Dela_Gothic_One({
+  variable: "--font-dela",
+  subsets: ["latin"],
+  weight: '400',
+});
+
 export const metadata = {
-  title: "Neuro-Linguistic Resonance Dashboard",
-  description: "Real-time neural oscillation monitor based on semantic cognitive load analysis.",
+  title: "MINDSTONE: Neural Analysis Division",
+  description: "Advanced cognitive resonance monitoring and empathetic intervention cockpit.",
 };
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className={`${inter.variable} ${spaceMono.variable} antialiased`}>
+    <html lang="en" className={`${inter.variable} ${spaceMono.variable} ${delaGothic.variable} antialiased`}>
       <body>{children}</body>
     </html>
   );
